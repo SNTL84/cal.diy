@@ -18,26 +18,43 @@ type CalProps = {
   embedJsUrl?: string;
 } & React.HTMLAttributes<HTMLDivElement>;
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
 const getUiConfig = (config?: PrefillAndIframeAttrsConfig): UiConfig => {
   if (!config) {
     return {};
   }
 
-  return {
-    ...(config.theme !== undefined ? { theme: config.theme } : {}),
-    ...(config.layout !== undefined ? { layout: config.layout } : {}),
-    ...(config.styles !== undefined ? { styles: config.styles } : {}),
-    ...(config.cssVarsPerTheme !== undefined ? { cssVarsPerTheme: config.cssVarsPerTheme } : {}),
-    ...(config.colorScheme !== undefined ? { colorScheme: config.colorScheme } : {}),
-    ...(config.disableAutoScroll !== undefined
-      ? { disableAutoScroll: config.disableAutoScroll }
-      : config["ui.autoscroll"] !== undefined
-        ? { disableAutoScroll: config["ui.autoscroll"] === "false" }
-        : {}),
-    ...(config.useSlotsViewOnSmallScreen !== undefined
-      ? { useSlotsViewOnSmallScreen: config.useSlotsViewOnSmallScreen === "true" }
-      : {}),
-  };
+  const uiConfig: UiConfig = {};
+
+  if (config.theme !== undefined) uiConfig.theme = config.theme;
+  if (config.layout !== undefined) uiConfig.layout = config.layout;
+  if (isRecord(config.styles)) uiConfig.styles = config.styles as UiConfig["styles"];
+  if (isRecord(config.cssVarsPerTheme)) {
+    const cssVarsPerTheme = config.cssVarsPerTheme;
+    if (isRecord(cssVarsPerTheme.light) && isRecord(cssVarsPerTheme.dark)) {
+      uiConfig.cssVarsPerTheme = {
+        light: cssVarsPerTheme.light as Record<string, string>,
+        dark: cssVarsPerTheme.dark as Record<string, string>,
+      };
+    }
+  }
+
+  const colorScheme = config["ui.color-scheme"];
+  if (colorScheme !== undefined) uiConfig.colorScheme = colorScheme;
+
+  if (typeof config.disableAutoScroll === "boolean") {
+    uiConfig.disableAutoScroll = config.disableAutoScroll;
+  } else if (config["ui.autoscroll"] !== undefined) {
+    uiConfig.disableAutoScroll = config["ui.autoscroll"] === "false";
+  }
+
+  if (config.useSlotsViewOnSmallScreen !== undefined) {
+    uiConfig.useSlotsViewOnSmallScreen = config.useSlotsViewOnSmallScreen === "true";
+  }
+
+  return uiConfig;
 };
 
 const Cal = function Cal(props: CalProps) {
