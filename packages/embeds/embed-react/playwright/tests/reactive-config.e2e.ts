@@ -19,7 +19,7 @@ test.describe("React Embed", () => {
       const beforeTheme = await embedIframe.evaluate(() => window.CalEmbed.embedStore.theme);
       expect(beforeTheme).toBe("dark");
 
-      await page.getByRole("button", { name: "Toggle theme" }).click();
+      await page.getByTestId("toggle-theme").click();
 
       await expect
         .poll(async () =>
