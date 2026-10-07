@@ -11,18 +11,19 @@ test.describe("React Embed", () => {
       await embeds.gotoPlayground({ url: "/inline.html", calNamespace });
 
       const embedIframe = await getEmbedIframe({ calNamespace, page, pathname: "/pro" });
-      await expect(embedIframe).toBeVisible();
+      await expect(page.locator(`iframe[name="cal-embed=${calNamespace}"]`).last()).toBeVisible();
+      if (!embedIframe) {
+        throw new Error("Embed iframe not found");
+      }
 
-      const beforeTheme = await embedIframe.contentFrame().evaluate(
-        () => window.CalEmbed.embedStore.theme
-      );
+      const beforeTheme = await embedIframe.evaluate(() => window.CalEmbed.embedStore.theme);
       expect(beforeTheme).toBe("dark");
 
       await page.getByRole("button", { name: "Toggle theme" }).click();
 
       await expect
         .poll(async () =>
-          embedIframe.contentFrame().evaluate(() => window.CalEmbed.embedStore.theme)
+          embedIframe.evaluate(() => window.CalEmbed.embedStore.theme)
         )
         .toBe("light");
     });
