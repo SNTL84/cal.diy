@@ -98,9 +98,10 @@ function App() {
       </h1>
       <button
         type="button"
+        data-testid="toggle-theme"
         onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
       >
-        Toggle theme
+        {theme}
       </button>
       <Cal
         calOrigin="http://localhost:3000"
